@@ -26,12 +26,36 @@ namespace WpfApp1
         {
             InitializeComponent();
         }
+        async void CreateTextBlock()
+        {
+            kacsak.Children.Clear();
+    
+            HttpClient client = new HttpClient();
+            string url = "http://127.0.0.1:3000/kacsa";
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync(url);
+                string stringResponse = await response.Content.ReadAsStringAsync();
+                List<KacsaClass> kacsalist = JsonConvert.DeserializeObject<List<KacsaClass>>(stringResponse);
+                foreach (KacsaClass item in kacsalist)
+                {
+                    TextBlock oneBlock = new TextBlock();
+                    oneBlock.Text = $"KACSA NEVE: {item.name}, KACSA HOSSZA: {item.length}";
+                    kacsak.Children.Add(oneBlock);
+                }
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+            
         async void AddKacsa(object s, EventArgs e)
         {
             try
             {
                 HttpClient client = new HttpClient();
-                string url = "localhost:3000/kacsa";
+                string url = "http://127.0.0.1:3000/kacsa";
                 var jsonObject = new
                 {
                     name = nev.Text,
@@ -41,6 +65,7 @@ namespace WpfApp1
                 StringContent data = new StringContent(jsondata, Encoding.UTF8, "application/json");
                 HttpResponseMessage respons = await client.PostAsync(url, data);
                 respons.EnsureSuccessStatusCode();
+                CreateTextBlock();
             }
             catch (Exception error)
             {
